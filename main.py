@@ -8,7 +8,7 @@ import screen_brightness_control as sbc
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(min_detection_confidence = 0.7, min_tracking_confidence = 0.7)
-mp_draw = mp.solutions.draw_utils
+mp_draw = mp.solutions.drawing_utils
 
 try:
     devices = AudioUtilities.GetSpeakers()
@@ -16,6 +16,7 @@ try:
     volume = interface.QueryInterface(IAudioEndpointVolume)
     volume_range = volume.GetVolumeRange()
     min_vol = volume_range[0]
+    max_vol = volume_range[1]
 except Exception as e:
     print(f"Error intializing Pycaw: {e}")
     exit()
@@ -35,12 +36,11 @@ while True:
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     result = hands.process(img_rgb)
 
-    if results.multi_hand_landmarks and results.multi_handness:
-        for i, hand_landmarks in enumerate(results.multi_hand_landmarks):
-            hand_label = results.multi_handedness[i]
-            classification[0].label
+    if result.multi_hand_landmarks and result.multi_handedness:
+        for i, hand_landmarks in enumerate(result.multi_hand_landmarks):
+            hand_label = result.multi_handedness[i].classification[0].label
 
-            mp_draw.draw_landmark(img, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            mp_draw.draw_landmarks(img, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             thumb_tip = hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP]
             index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
 
@@ -70,7 +70,7 @@ while True:
 
                 cv2.rectangle(img, (50, int(vol_bar)), (85,400), (255,0,0), cv2.FILLED)
 
-                cv2.putText(img, f'Volume: {int(np.interp(distance, [300,300], [0,100]))}%' (40,450), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 3)
+                cv2.putText(img, f'Volume: {int(np.interp(distance, [300,300], [0,100]))}%', (40,450), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 3)
 
             
             elif hand_label == "Left":
